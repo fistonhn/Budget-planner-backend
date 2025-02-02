@@ -20,14 +20,8 @@ mongoose
   .then(() => console.log("DB Connected"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
-// CORS configuration (allow requests from all origins)
-const corsOptions = {
-  origin: "*", // Allow requests from all origins
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
 
-app.use(cors(corsOptions));
+  app.use(cors({origin: "*"}));
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
