@@ -21,9 +21,24 @@ mongoose
   .catch((error) => console.error("MongoDB connection error:", error));
 
 
+  // CORS middleware (this will handle preflight requests and set headers for all routes)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"); // Allow necessary methods
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow necessary headers
+
+  // Handle preflight requests (OPTIONS)
+  if (req.method === "OPTIONS") {
+    return res.status(200).end(); // Respond immediately to preflight requests
+  }
+
+  next(); // Continue to the next middleware or route handler
+});
+
+
+
   app.use(cors({origin: "*"}));
 
-// Middleware to parse JSON request bodies
 app.use(express.json());
 
 // Route handlers
