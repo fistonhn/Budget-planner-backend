@@ -1,34 +1,47 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
+// Import route handlers
 const userRouter = require("./routes/userRouter");
-const errorHandler = require("./middlewares/errorHandlerMiddleware");
 const categoryRouter = require("./routes/categoryRouter");
 const transactionRouter = require("./routes/transactionRouter");
+
+// Import error handling middleware
+const errorHandler = require("./middlewares/errorHandlerMiddleware");
+
 const app = express();
 
-//!Connect to mongodb
-mongoose
-  .connect("mongodb+srv://fistonkerapay:fistonkerapay@cluster0.amcgs.mongodb.net/AviatorPredictorPro?retryWrites=true&w=majority")
-  .then(() => console.log("DB Connected"))
-  .catch((e) => console.log(e));
+// MongoDB connection (hardcoded connection string)
+const mongoURI = "mongodb+srv://fistonkerapay:fistonkerapay@cluster0.amcgs.mongodb.net/AviatorPredictorPro?retryWrites=true&w=majority";
 
-//! Cors config
+mongoose
+  .connect(mongoURI)
+  .then(() => console.log("DB Connected"))
+  .catch((error) => console.error("MongoDB connection error:", error));
+
+// CORS configuration (allow requests from all origins)
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: "*", // Allow requests from all origins
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
+
 app.use(cors(corsOptions));
-//!Middlewares
-app.use(express.json()); //?Pass incoming json data
-//!Routes
-app.use("/", userRouter);
-app.use("/", categoryRouter);
-app.use("/", transactionRouter);
-//! Error
+
+// Middleware to parse JSON request bodies
+app.use(express.json());
+
+// Route handlers
+app.use("/users", userRouter);  // Use '/users' for user-related routes
+app.use("/categories", categoryRouter); // Use '/categories' for category-related routes
+app.use("/transactions", transactionRouter); // Use '/transactions' for transaction-related routes
+
+// Global error handling middleware (ensure it's last)
 app.use(errorHandler);
 
-//!Start the server
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () =>
-  console.log(`Server is running on this port... ${PORT} `)
-);
+// Start the server
+const PORT = 8000; // Hardcoded port (or use process.env.PORT in case of deployment)
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
