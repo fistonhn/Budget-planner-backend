@@ -25,13 +25,15 @@ app.use("/", transactionRouter);
 //! Error
 app.use(errorHandler);
 
-if (require.main === module) {
+// if (require.main === module) {
   const PORT = process.env.PORT || 8000;
   app.listen(PORT, () =>
     console.log(`Server is running on this port... ${PORT} `)
   );
-}
+// }
+module.exports = app;
+
 
 //!Start the server
-module.exports.handler = serverless(app); // Export handler for serverless execution
+// module.exports.handler = serverless(app); // Export handler for serverless execution
 
