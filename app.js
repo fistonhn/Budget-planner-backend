@@ -1,6 +1,5 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const serverless = require("serverless-http");
 const cors = require("cors");
 const userRouter = require("./routes/userRouter");
 const errorHandler = require("./middlewares/errorHandlerMiddleware");
