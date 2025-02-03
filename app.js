@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const serverless = require("serverless-http");
 const cors = require("cors");
 const userRouter = require("./routes/userRouter");
 const errorHandler = require("./middlewares/errorHandlerMiddleware");
@@ -24,8 +25,13 @@ app.use("/", transactionRouter);
 //! Error
 app.use(errorHandler);
 
+if (require.main === module) {
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () =>
+    console.log(`Server is running on this port... ${PORT} `)
+  );
+}
+
 //!Start the server
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () =>
-  console.log(`Server is running on this port... ${PORT} `)
-);
+module.exports.handler = serverless(app); // Export handler for serverless execution
+
