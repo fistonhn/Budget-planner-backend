@@ -4,6 +4,8 @@ const cors = require("cors");
 const userRouter = require("./routes/userRouter");
 const errorHandler = require("./middlewares/errorHandlerMiddleware");
 const categoryRouter = require("./routes/categoryRouter");
+const budgetRouter = require("./routes/budgetRouter");
+
 const transactionRouter = require("./routes/transactionRouter");
 const app = express();
 
@@ -20,6 +22,7 @@ app.use(express.json());
 //!Routes
 app.use("/", userRouter);
 app.use("/", categoryRouter);
+app.use("/", budgetRouter);
 app.use("/", transactionRouter);
 //! Error
 app.use(errorHandler);
@@ -31,8 +34,3 @@ app.use(errorHandler);
   );
 // }
 module.exports = app;
-
-
-//!Start the server
-// module.exports.handler = serverless(app); // Export handler for serverless execution
-
