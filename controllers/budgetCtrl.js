@@ -1,19 +1,30 @@
 const asyncHandler = require("express-async-handler");
 const Budget = require("../model/Budget");
-// const Transaction = require("../model/Transaction");
-
 const BudgetController = {
   //!add
   create: asyncHandler(async (req, res) => {
     
     try {
-        const budgetData = req.body;
-        const savedData = await Budget.insertMany(budgetData.data);
-    
+        const projectOwnerId = req.user;
+
+        const projectData = new Budget({
+            projectName: req.body.projectName,
+            projectOwnerId: projectOwnerId,
+            teamEmails: req.body.teamEmails,
+            budgetData: req.body.budgetData
+          });
+      
+          const saveData = await projectData.save();
+      
+          res.status(200).send('Project Budget saved successfully');
+          console.log('Project Budget saved successfully');
+      
+        // const saveData = await Budget.insertMany(budgetData.data);
         // Send response
-       res.status(200).json({ message: "Budget imported successfully", savedData });
+       res.status(200).json({ message: "Project Budget created successfully", saveData });
 
       } catch (error) {
+        console.error("Error saving Budget to database:", error);
         res.status(500).json({ message: "Error saving Budget to database", error });
       }
   }),
@@ -31,26 +42,25 @@ const BudgetController = {
     
   }),
 
-
-  // Display a single budget by ID
-    getBudgetById: asyncHandler(async (req, res) => {
-        try {
-            const budgetId = req.params.id;
-            
-            // Find the budget by ID in MongoDB
-            const budget = await Budget.findById(budgetId);
-            
-            if (!budget) {
-              return res.status(404).json({ message: "Budget not found" });
-            }
-            
-            res.status(200).json(budget);  // Send the budget data as a response
-          } catch (error) {
-            console.error("Error fetching budget:", error);
-            res.status(500).json({ message: "Error fetching budget", error });
-          }
+// Display a single budget by ID
+  getBudgetById: asyncHandler(async (req, res) => {
+    try {
+        const budgetId = req.params.id;
         
-    }),
+        // Find the budget by ID in MongoDB
+        const budget = await Budget.findById(budgetId);
+        
+        if (!budget) {
+        return res.status(404).json({ message: "Budget not found" });
+        }
+        
+        res.status(200).json(budget);  // Send the budget data as a response
+    } catch (error) {
+        console.error("Error fetching budget:", error);
+        res.status(500).json({ message: "Error fetching budget", error });
+    }
+    
+ }),
 
   //!update
   update: asyncHandler(async (req, res) => {

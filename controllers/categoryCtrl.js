@@ -1,36 +1,33 @@
 const asyncHandler = require("express-async-handler");
 const Category = require("../model/Category");
 const Transaction = require("../model/Transaction");
+const User = require("../model/User");
 
 const categoryController = {
   //!add
   create: asyncHandler(async (req, res) => {
-    const { name, type } = req.body;
-    if (!name || !type) {
-      throw new Error("Name and type are required for creating a category");
+    
+    const { name } = req.body;
+    if (!name) {
+      throw new Error("Name is required for creating a category");
     }
-    //Convert the name to lowercase
     const normalizedName = name.toLowerCase();
-    //! Check if the type is valid
-    const validTypes = ["income", "expense"];
-    if (!validTypes.includes(type.toLowerCase())) {
-      throw new Error("Invalid category type" + type);
-    }
+    const userName = await User.findOne({ _id: req.user });
+
     //!Check if category already exists on the user
     const categoryExists = await Category.findOne({
-      name: normalizedName,
-      user: req.user,
+      Name: normalizedName,
     });
     if (categoryExists) {
       throw new Error(
-        `Category ${categoryExists.name} already exists in the database`
+        `Category ${categoryExists.Name} already exists in the database`
       );
     }
     //! Create the category
     const category = await Category.create({
-      name: normalizedName,
       user: req.user,
-      type,
+      Name: normalizedName,
+      RecordedBy: userName.username,
     });
     res.status(201).json(category);
   }),
@@ -43,47 +40,62 @@ const categoryController = {
 
   //!update
   update: asyncHandler(async (req, res) => {
-    const { categoryId } = req.params;
-    const { type, name } = req.body;
+    const categoryId = req.params.id;
+    const { name } = req.body;
+  
+    if (!name) {
+      return res.status(400).json({ message: "Category name is required" });
+    }
+  
     const normalizedName = name.toLowerCase();
-    const category = await Category.findById(categoryId);
-    if (!category && category.user.toString() !== req.user.toString()) {
-      throw new Error("Category not found or user not authorized");
+    
+    try {
+      // Find the category by ID
+      const category = await Category.findById(categoryId);
+  
+      // If the category is not found or the user is not authorized to update it
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+  
+      // Ensure that the logged-in user owns the category
+      if (category.user.toString() !== req.user.id) {
+        return res.status(403).json({ message: "User not authorized to update this category" });
+      }
+  
+      // Update category name if the new name is provided
+      category.Name = normalizedName || category.Name;
+  
+      // Save the updated category
+      await category.save();
+  
+      // Respond with a success message
+      res.status(200).json({ message: "Category updated successfully" });
+    } catch (err) {
+      // Handle any unexpected errors
+      res.status(500).json({ message: "An error occurred while updating the category", error: err.message });
     }
-    const oldName = category.name;
-    //! Update category properties
-    category.name = normalizedName || category.name;
-    category.type = type || category.type;
-    const updatedCategory = await category.save();
-    //Update affected transaction
-    if (oldName !== updatedCategory.name) {
-      await Transaction.updateMany(
-        {
-          user: req.user,
-          category: oldName,
-        },
-        { $set: { category: updatedCategory.name } }
-      );
-    }
-    res.json(updatedCategory);
   }),
+  
   //! delete
   delete: asyncHandler(async (req, res) => {
-    const category = await Category.findById(req.params.id);
-    if (category && category.user.toString() === req.user.toString()) {
-      //!  Update transactions that have this category
-      const defaultCategory = "Uncategorized";
-      await Transaction.updateMany(
-        { user: req.user, category: category.name },
-        { $set: { category: defaultCategory } }
-      );
-      //! Remove category
-      await Category.findByIdAndDelete(req.params.id);
-      res.json({ message: "Category removed and transactions updated" });
-    } else {
-      res.json({ message: "Category not found or user not authorized" });
+    try {
+      // Find the category by ID and delete it
+      const category = await Category.findByIdAndDelete(req.params.id);
+  
+      // If the category is not found
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+  
+      // Respond with success message
+      res.status(200).json({ message: "Category removed successfully, transactions updated" });
+    } catch (err) {
+      // Handle any unexpected errors
+      res.status(500).json({ message: "An error occurred while deleting the category", error: err.message });
     }
   }),
+  
 };
 
 module.exports = categoryController;

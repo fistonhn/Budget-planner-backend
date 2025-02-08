@@ -1,23 +1,45 @@
 const asyncHandler = require("express-async-handler");
-const Category = require("../model/Category");
 const Transaction = require("../model/Transaction");
+const User = require("../model/User");
+
 
 const transactionController = {
   //!add
   create: asyncHandler(async (req, res) => {
-    const { type, category, amount, date, description } = req.body;
-    if (!amount || !type || !date) {
-      throw new Error("Type, amount and date are required");
+    const { type, category, amount, currency, date, description, projectName, quantity, unit, paymentMethod, vendor } = req.body;
+
+    const userName = await User.findOne({ _id: req.user });
+
+    // check if category is already in the database
+    const categoryExists = await Transaction.findOne({ category });
+    if (categoryExists) {
+      throw new Error("Category already exists");
     }
+    
+    
+    if (!amount || !type || !date || !category) {
+      throw new Error("Fill all required fields");
+    }
+
     //! Create
     const transaction = await Transaction.create({
       user: req.user,
       type,
       category,
       amount,
+      currency,
       description,
+      date,
+      projectName,
+      quantity,
+      unit,
+      paymentMethod,
+      vendor,
+      recordedBy: userName.username,
     });
-    res.status(201).json(transaction);
+
+    res.status(201).json({ message: "Transaction Budget recorded successfully", transaction });
+
   }),
 
   //!lists
