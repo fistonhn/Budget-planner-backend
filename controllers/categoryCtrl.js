@@ -62,7 +62,7 @@ const categoryController = {
 
   //!lists
   lists: asyncHandler(async (req, res) => {
-    const categories = await Category.find({ user: req.user });
+    const categories = await Category.find();
     res.status(200).json(categories);
   }),
 

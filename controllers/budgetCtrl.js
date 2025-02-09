@@ -3,7 +3,6 @@ const Budget = require("../model/Budget");
 const BudgetController = {
   //!add
   create: asyncHandler(async (req, res) => {
-    
     try {
         const projectOwnerId = req.user;
 
@@ -31,7 +30,7 @@ const BudgetController = {
 
   lists: asyncHandler(async (req, res) => {
     try {
-        const budgetData = await Budget.find();
+        const budgetData = await Budget.find({projectOwnerId: req.user});
     
         // Send the data as a JSON response
         res.status(200).json(budgetData);
