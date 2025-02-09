@@ -11,6 +11,13 @@ transactionRouter.post(
   isAuthenticated,
   transactionController.create
 );
+
+transactionRouter.post(
+  "/api/v1/transactions/importTransactions",
+  isAuthenticated,
+  transactionController.importTransactions
+);
+
 //! lists
 transactionRouter.get(
   "/api/v1/transactions/lists",
