@@ -5,6 +5,7 @@ const categorySchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, },
     Name: { type: String, required: true },
     RecordedBy: { type: String, required: true },
+    isDefault: { type: Boolean, required: true },
   },
   {
     timestamps: true,

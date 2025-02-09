@@ -45,6 +45,7 @@ const categoryController = {
         user: req.user,
         Name: normalizedName,
         RecordedBy: userName.username,
+        isDefault: false
       });
     }
   
@@ -62,8 +63,11 @@ const categoryController = {
 
   //!lists
   lists: asyncHandler(async (req, res) => {
-    const categories = await Category.find();
-    res.status(200).json(categories);
+    const myCategories = await Category.find({user: req.user});
+    const defaultCategories = await Category.find({isDefault: true});
+
+    const userAndDefaultCategories = myCategories.concat(defaultCategories);
+    res.status(200).json(userAndDefaultCategories);
   }),
 
   //!update
@@ -79,24 +83,16 @@ const categoryController = {
     try {
       // Find the category by ID
       const category = await Category.findById(categoryId);
-  
-      // If the category is not found or the user is not authorized to update it
       if (!category) {
         return res.status(404).json({ message: "Category not found" });
       }
-  
-      // Ensure that the logged-in user owns the category
       if (category.user.toString() !== req.user) {
         return res.status(403).json({ message: "User not authorized to update this category" });
       }
-  
-      // Update category name if the new name is provided
       category.Name = normalizedName || category.Name;
   
-      // Save the updated category
       await category.save();
   
-      // Respond with a success message
       res.status(200).json({ message: "Category updated successfully" });
     } catch (err) {
       // Handle any unexpected errors
@@ -107,7 +103,12 @@ const categoryController = {
   //! delete
   delete: asyncHandler(async (req, res) => {
     try {
-      // Find the category by ID and delete it
+      const defaultCategories = await Category.find({ isDefault: true, _id: req.params.id });
+
+      if (defaultCategories[0] && defaultCategories[0].isDefault === true) {
+        return res.status(404).json({ message: "You can not delete default Category!" });
+      }
+
       const category = await Category.findByIdAndDelete(req.params.id);
   
       // If the category is not found
