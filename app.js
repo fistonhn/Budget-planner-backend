@@ -7,6 +7,9 @@ const categoryRouter = require("./routes/categoryRouter");
 const budgetRouter = require("./routes/budgetRouter");
 
 const transactionRouter = require("./routes/transactionRouter");
+const projectRouter = require("./routes/projectRouter");
+const reportRouter = require("./routes/reportRouter");
+
 const app = express();
 
 //!Connect to mongodb
@@ -23,7 +26,10 @@ app.use(express.json());
 app.use("/", userRouter);
 app.use("/", categoryRouter);
 app.use("/", budgetRouter);
+app.use("/", projectRouter);
 app.use("/", transactionRouter);
+app.use("/", reportRouter);
+
 //! Error
 app.use(errorHandler);
 

@@ -9,12 +9,32 @@ budgetRouter.post(
   isAuthenticated,
   budgetController.create
 );
+
+budgetRouter.post(
+  "/api/v1/budget/importIncomes",
+  isAuthenticated,
+  budgetController.importIncomes
+);
+
 //! lists
 budgetRouter.get(
   "/api/v1/budget/lists",
   isAuthenticated,
   budgetController.lists
 );
+
+budgetRouter.post(
+  "/api/v1/budget/listsByProject",
+  isAuthenticated,
+  budgetController.listsByProject
+);
+
+budgetRouter.post(
+  "/api/v1/budget/updateIncomes",
+  isAuthenticated,
+  budgetController.updateIncomes
+);
+
 //! get by id
 budgetRouter.get(
   "/api/v1/budget/:id",

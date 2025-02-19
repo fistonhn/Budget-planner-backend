@@ -12,7 +12,7 @@ const transactionSchema = new mongoose.Schema(
     amount: { type: Number, required: true, },
     paymentMethod: { type: String, required: false },
     recordedBy: { type: String, required: true },
-    date: { type: Date, default: Date.now, },
+    date: { type: Date, required: false },
   },
   {
     timestamps: true,
