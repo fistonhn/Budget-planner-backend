@@ -9,6 +9,7 @@ const reportSchema = new mongoose.Schema(
     expenseAmount: { type: Number, required: false },
     incomeId: { type: mongoose.Schema.Types.ObjectId, ref: "Budget", required: false, },
     incomeAmount: { type: Number, required: false },
+    amount: { type: Number, required: false },
     category: { type: String, required: false },
 
   },

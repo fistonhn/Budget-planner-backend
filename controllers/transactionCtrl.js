@@ -6,7 +6,7 @@ const Report = require("../model/Report");
 const transactionController = {
   //!add
   create: asyncHandler(async (req, res) => {
-    const { projectName, category, description, quantity, unit, price, amount, paymentMethod, date } = req.body;
+    const { projectName, category, description, quantity, unit, price, amount, contractAmount, paymentMethod, date, fullSelectedReport } = req.body;
 
     const userName = await User.findOne({ _id: req.user });
 
@@ -15,7 +15,7 @@ const transactionController = {
       return;
     }
     
-    if (!amount || !category || !date || !projectName || !quantity || !unit || !paymentMethod || !price) {
+    if (!contractAmount, !amount || !category || !date || !projectName || !quantity || !unit || !paymentMethod || !price || !fullSelectedReport) {
       throw new Error("Fill all required fields");
     }
 
@@ -36,15 +36,36 @@ const transactionController = {
 
       });
 
-        const reportData = new Report({
-          user: req.user,
-          projectName: projectName,
-          description: description,
-          expenseId: transaction._id,
-          expenseAmount: amount,
-          category: category ? category : 'Not Categorized',
-        });
-        const repot = await reportData.save(); 
+        const saveTransaction = await transaction.save(); 
+      
+      const reportId = fullSelectedReport._id
+      const existingReport = await Report.findById(reportId);
+
+      if(existingReport){
+          if(!existingReport.expenseAmount) {
+          console.log('existingRepoxxxxxxxxxx', existingReport)
+
+          existingReport.expenseAmount = amount;  
+          existingReport.expenseId = saveTransaction._id;  
+
+          const updateThisReport = await existingReport.save();
+        } else {
+          const reportData = new Report({
+            user: req.user,
+            projectName: projectName,
+            description: fullSelectedReport.description,
+            expenseId: saveTransaction._id,
+            expenseAmount: amount,
+            amount: fullSelectedReport.amount,
+            category: category,
+          });
+          const repot = await reportData.save(); 
+          console.log('repgggggggot', repot)
+        }
+
+      } else {
+        throw new Error("Error searching report");
+      }
 
       res.status(201).json({ message: "Transaction Budget recorded successfully", transaction });
     } catch (err) {
@@ -97,6 +118,7 @@ const transactionController = {
           user: req.user,
           projectName: transData.projectName,
           description: transData.description,
+          amount: transData.amount,
           expenseId: transData._id,
           expenseAmount: transData.amount,
           category: transData.category ? transData.category : 'Not Categorized',
@@ -166,26 +188,36 @@ const transactionController = {
     // Save the updated transaction
     const updatedTransaction = await transaction.save();
 
-    // update or create report table
-      const existingReport = await Report.findOne({expenseId: req.params.id});
-      if(existingReport){
-        existingReport.expenseAmount = req.body.amount || existingReport.expenseAmount;  
-        existingReport.category = req.body.category || existingReport.category;
-        existingReport.projectName = req.body.projectName || existingReport.projectName;
-        existingReport.description = req.body.description || existingReport.description;
+      const fullSelectedReport = req.body.fullSelectedReport
+      const reportId = fullSelectedReport._id
+      const existingReport = await Report.findById(reportId);
 
-        const updateThisReport = await existingReport.save();
-      } else {
+      if(existingReport){
+          if(!existingReport.expenseAmount) {
+          // console.log('existingRepoxxxxxxxxxx', existingReport)
+
+          existingReport.expenseAmount = amount;  
+          existingReport.expenseId = updatedTransaction._id;  
+
+          const updateThisReport = await existingReport.save();
+          // console.log('updateThisReportkkkkkkkkkkk', updateThisReport)
+
+        } else {
           const reportData = new Report({
-          user: req.user,
-          projectName: updatedTransaction.projectName,
-          description: updatedTransaction.description,
-          expenseId: updatedTransaction._id,
-          expenseAmount: updatedTransaction.amount,
-          category: updatedTransaction.category ? updatedTransaction.category : 'Not Categorized',
-        });
-        const repot = await reportData.save(); 
-        console.log('repot', repot)
+            user: req.user,
+            projectName: req.body.projectName,
+            description: fullSelectedReport.description,
+            expenseId: updatedTransaction._id,
+            expenseAmount: req.body.amount,
+            amount: fullSelectedReport.amount,
+            category: req.body.category,
+          });
+          const repot = await reportData.save(); 
+          console.log('repgggggggot', repot)
+        }
+
+      } else {
+        throw new Error("Error searching report");
       }
     // Respond with the updated transaction
     res.status(200).json({

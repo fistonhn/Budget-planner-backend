@@ -50,7 +50,7 @@ const BudgetController = {
         rate: incomeData.Rate,
         amount: incomeData.Amount,
         progress: (incomeData.Amount ? progress : null),
-        currentAmount: (incomeData.Amount ? (incomeData.Amount *(100-progress)/100) : null),
+        currentAmount: (incomeData.Amount ? (incomeData.Amount * progress) : null),
       });
     }
 
@@ -68,29 +68,29 @@ const BudgetController = {
   }),
 
   updateIncomes: asyncHandler(async (req, res) => {
-    let { currentAmount, category, id, progress, projectName, description } = req.body;
+    let { currentAmount, amount, category, id, progress, projectName, description } = req.body;
       try {
         // Find the existing budget record using the unique code and project name
         const existingBudget = await Budget.findById(id);
   
         if (existingBudget) {
-          existingBudget.progress = progress || existingBudget.progress;
-          existingBudget.currentAmount = currentAmount || existingBudget.currentAmount;  
-          existingBudget.category = category || existingBudget.category;
+          existingBudget.progress = progress;
+          existingBudget.currentAmount = currentAmount;  
+          existingBudget.category = category;
   
           // Save the updated record
           const updatedBudgets = await existingBudget.save();
 
-
           // update or create report table
-          const existingReport = await Report.findOne({incomeId: id});
+          const existingReport = await Report.findById(id);
           if(existingReport){
-            console.log("existingReport", existingReport)
+            // console.log('existingRepoxxxxxxxxxx', existingReport)
 
             existingReport.incomeAmount = currentAmount || existingReport.incomeAmount;  
             existingReport.category = category || existingReport.category;
             const updateThisReport = await existingReport.save();
-            console.log("updateThisReport", updateThisReport)
+
+            // console.log('updateThisReport', updateThisReport)
 
           } else {
             const reportData = new Report({
@@ -99,10 +99,11 @@ const BudgetController = {
               description: description,
               incomeId: id,
               incomeAmount: currentAmount,
+              amount: amount,
               category: category ? category : 'Not Categorized',
             });
             const repot = await reportData.save(); 
-            console.log('repot', repot)
+            // console.log('repot', repot)
           }
 
           res.status(200).json({ message: "Budgets updated successfully", updatedBudgets });
