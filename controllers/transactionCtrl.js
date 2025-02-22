@@ -117,7 +117,7 @@ const transactionController = {
         const savedTransaction = await transaction.save();
     
         // Optionally, log the saved transaction or handle additional operations
-        console.log('Transaction saved: ', savedTransaction);
+        // console.log('Transaction saved: ', savedTransaction);
       }
     
       res.status(201).json({ message: "Transactions recorded successfully." });
@@ -134,20 +134,15 @@ const transactionController = {
       return res.status(404).json({ message: "User not found" });
     }
   
-    // Get the user's project rights (projects the user has access to)
     const userProjects = userExisted.projectsRight;
-  
-    // Get the project ids from the user's project rights
     const projectNames = userProjects.map((projRight) => projRight.projectName);
-    console.log('projectNames', projectNames)
+    // console.log('projectNames', projectNames)
 
   
-    // Find all projects that have a name that exists in the user's project rights
     const myTransactions = await Transaction.find({
       'projectName': { $in: projectNames },
     });
   
-    console.log('myTransactions', myTransactions)
     res.status(200).json({
       message: "Projects listed successfully",
       myTransactions,
@@ -233,18 +228,18 @@ const transactionController = {
       return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
     }
 
-    // if (transaction && transaction.user.toString() === req.user.toString()) {
+    if (transaction && transaction.user.toString() === req.user.toString()) {
 
-    //   await Transaction.findByIdAndDelete(req.params.id);
+      await Transaction.findByIdAndDelete(req.params.id);
 
-    //   const existingReport = await Report.findOne({expenseId: req.params.id});
-    //   if(existingReport) {
-    //     await Report.findByIdAndDelete(existingReport._id);
+      const existingReport = await Report.findOne({expenseId: req.params.id});
+      if(existingReport) {
+        await Report.findByIdAndDelete(existingReport._id);
 
-    //   }
+      }
 
-    //   res.json({ message: "Transaction removed" });
-    // }
+      res.json({ message: "Transaction removed" });
+    }
   }),
 };
 
