@@ -76,6 +76,8 @@ const transactionController = {
 
   importTransactions: asyncHandler(async (req, res) => {
     const categoriesData = req.body;
+    console.log('bbbbbbbbbb ', categoriesData);
+
     
     try {
       // Loop through each category and create reports and transactions
@@ -117,7 +119,7 @@ const transactionController = {
         const savedTransaction = await transaction.save();
     
         // Optionally, log the saved transaction or handle additional operations
-        // console.log('Transaction saved: ', savedTransaction);
+        console.log('Transaction saved: ', savedTransaction);
       }
     
       res.status(201).json({ message: "Transactions recorded successfully." });
