@@ -13,6 +13,14 @@ const transactionSchema = new mongoose.Schema(
     paymentMethod: { type: String, required: false },
     recordedBy: { type: String, required: true },
     date: { type: Date, required: false },
+    incomeReportData: {
+      type: {
+        incomeCategory: { type: String, required: false },
+        incomeDescription: { type: String, required: false },
+        reportId: { type: String, required: false },
+      },
+      required: false,
+    },  
   },
   {
     timestamps: true,

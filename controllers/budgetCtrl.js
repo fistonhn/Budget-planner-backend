@@ -1,11 +1,11 @@
 const asyncHandler = require("express-async-handler");
 const Budget = require("../model/Budget");
 const Report = require("../model/Report");
+const User = require("../model/User");
 
 const BudgetController = {
   //!add
   create: asyncHandler(async (req, res) => {
-    console.log("scscwcdcw", req.body)
     try {
         const projectOwnerId = req.user;
 
@@ -30,9 +30,18 @@ const BudgetController = {
     
     // Validate that we have categories to process
     if (budgetData.length === 0) {
-      throw new Error(" No data found!");
+      return res.status(401).json({ message: "Imported file is invalid format! Download file sample below For valid format." });
     }
-    
+    // verify rights user have for project
+    const userExisted = await User.findById(req.user);
+    // Get the user's project rights (projects the user has access to)
+    const userProjects = userExisted.projectsRight;
+    const projectRight = userProjects.find((proj) => proj.projectName === projectName);
+
+    if (!projectRight || projectRight.right === 'ReadOnly') {
+      return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
+    }
+
     const incomesToCreate = [];
     const errors = [];
 
@@ -72,6 +81,17 @@ const BudgetController = {
       try {
         // Find the existing budget record using the unique code and project name
         const existingBudget = await Budget.findById(id);
+
+        // verify rights user have for project
+        const userExisted = await User.findById(req.user);
+        // Get the user's project rights (projects the user has access to)
+        const userProjects = userExisted.projectsRight;
+        const projectRight = userProjects.find((proj) => proj.projectName === projectName); // Adjust field if necessary
+
+        if (!projectRight || projectRight.right === 'ReadOnly') {
+          return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
+        }
+        // console.log('projectRight', projectRight)
   
         if (existingBudget) {
           existingBudget.progress = progress;
@@ -114,6 +134,7 @@ const BudgetController = {
         }
       } catch (err) {
         // Catch any errors in the loop and log them
+        console.log(err)
         res.status(500).json({ message: "No valid budgets were found to update", err });
       }
   }),

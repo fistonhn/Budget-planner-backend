@@ -22,8 +22,9 @@ transactionRouter.post(
 transactionRouter.get(
   "/api/v1/transactions/lists",
   isAuthenticated,
-  transactionController.getFilteredTransactions
+  transactionController.listsByProject
 );
+
 //! update
 transactionRouter.put(
   "/api/v1/transactions/update/:id",
