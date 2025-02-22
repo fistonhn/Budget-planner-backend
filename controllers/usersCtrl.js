@@ -73,28 +73,41 @@ const usersController = {
       const accessRight = assignData.accessRight
       const userEmail = assignData.userEmail
 
-      // Step 1: Validate the incoming data
       if (!accessRight || !userEmail) {
         return res.status(400).json({ message: "All fields (accessRight, and userEmail) are required." });
       }
 
       const userExisted = await User.findOne({ email: userEmail });
+
       if (!userExisted) {
         return res.status(404).json({ message: `User must have registed acount, ${userEmail} is Not registered!` });
       }
 
-      // Check if the project already exists in the user's projectsRight array
+      // verify rights user have for project
+      const myRight = await User.findById(req.user );
+ 
+      const userProjects = myRight.projectsRight;
+      const projectRight = userProjects.find((proj) => proj.projectName === projectName);
+
+      if (!projectRight || projectRight.right !== 'owner') {
+        return res.status(401).json({ message: "you don't have ownership of this Project!" });
+      }
+
           const existingProjectIndex = userExisted.projectsRight.findIndex(projRight => projRight.projectId === projectId);
 
           if (existingProjectIndex !== -1) {
-            // If the project exists, update its accessRight
+            // console.log('myRight', userExisted.projectsRight[existingProjectIndex])
+
+            if(userExisted.projectsRight[existingProjectIndex].right === 'owner') {
+              return res.status(401).json({ message: "Project Owner has full access already!" });
+            }
+
             userExisted.projectsRight[existingProjectIndex].right = accessRight;
             const updateUserPr = await userExisted.save();
-            console.log('updateUserPr',updateUserPr)
+            // console.log('updateUserPr',updateUserPr)
 
             return res.status(200).json({ message: "Project access updated successfully", user: userExisted });
           } else {
-            // If the project doesn't exist, add it to the projectsRight array
             const newProject = {
               right: accessRight,
               projectId: projectId,
@@ -106,7 +119,7 @@ const usersController = {
           }      
       } catch (error) {
           console.error("Error saving Project to database:", error);
-          res.status(500).json({ message: "Error saving Project to database", error });
+          res.status(500).json({ message: "Internal server error!", error });
     }
   }),
 

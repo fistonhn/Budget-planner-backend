@@ -7,7 +7,7 @@ userRouter.post("/api/v1/users/register", usersController.register);
 //! Login
 userRouter.post("/api/v1/users/login", usersController.login);
 
-userRouter.post("/api/v1/users/assignProject", usersController.assignProject);
+userRouter.post("/api/v1/users/assignProject", isAuthenticated, usersController.assignProject);
 
 userRouter.get(
   "/api/v1/users/profile",

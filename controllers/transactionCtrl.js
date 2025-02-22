@@ -214,10 +214,7 @@ const transactionController = {
 
   //! delete
   delete: asyncHandler(async (req, res) => {
-    
     const transaction = await Transaction.findById(req.params.id);
-
-    console.log('transactiontransactiontransaction', transaction)
 
     // verify rights user have for project
     const userExisted = await User.findById(req.user);
@@ -232,14 +229,14 @@ const transactionController = {
 
       await Transaction.findByIdAndDelete(req.params.id);
 
-      const existingReport = await Report.findOne({expenseId: req.params.id});
-      if(existingReport) {
-        await Report.findByIdAndDelete(existingReport._id);
+      const reportId = transaction.incomeReportData.reportId
+      await Report.findByIdAndDelete(reportId);
 
-      }
 
-      res.json({ message: "Transaction removed" });
+      res.json({ message: "Transaction Deleted Successfuly" });
+
     }
+    
   }),
 };
 
