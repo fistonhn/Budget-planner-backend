@@ -84,53 +84,60 @@ const BudgetController = {
 
         // verify rights user have for project
         const userExisted = await User.findById(req.user);
-        // Get the user's project rights (projects the user has access to)
         const userProjects = userExisted.projectsRight;
-        const projectRight = userProjects.find((proj) => proj.projectName === projectName); // Adjust field if necessary
+        const projectRight = userProjects.find((proj) => proj.projectName === projectName);
 
         if (!projectRight || projectRight.right === 'ReadOnly') {
           return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
         }
-        // console.log('projectRight', projectRight)
   
         if (existingBudget) {
-          existingBudget.progress = progress;
-          existingBudget.currentAmount = currentAmount;  
-          existingBudget.category = category;
-  
-          // Save the updated record
-          const updatedBudgets = await existingBudget.save();
+          const reportId = existingBudget?.incomeReportData?.reportId
+          const existingReport = await Report.findById(reportId);
 
-          // update or create report table
-          const existingReport = await Report.findById(id);
+          let savedReport
+
           if(existingReport){
-            // console.log('existingRepoxxxxxxxxxx', existingReport)
+            // console.log('existingReport', existingReport)
 
             existingReport.incomeAmount = currentAmount || existingReport.incomeAmount;  
             existingReport.category = category || existingReport.category;
             const updateThisReport = await existingReport.save();
-
-            // console.log('updateThisReport', updateThisReport)
-
+            savedReport = updateThisReport
           } else {
             const reportData = new Report({
               user: req.user,
               projectName: projectName,
               description: description,
-              incomeId: id,
               incomeAmount: currentAmount,
               amount: amount,
-              category: category ? category : 'Not Categorized',
+              category: category ? category : existingBudget.category,
             });
             const repot = await reportData.save(); 
+            savedReport = repot
             // console.log('repot', repot)
           }
+
+
+
+          const incomeReportData = {
+            reportId: savedReport._id,
+            incomeCategory: savedReport?.category,
+            incomeDescription: savedReport?.description,
+          };
+
+          existingBudget.progress = progress;
+          existingBudget.currentAmount = currentAmount;  
+          existingBudget.category = category;
+          existingBudget.incomeReportData = incomeReportData;
+  
+          // Save the updated record
+          const updatedBudgets = await existingBudget.save();
 
           res.status(200).json({ message: "Budgets updated successfully", updatedBudgets });
 
         } else {
-          throw new Error(" No budget found!");
-
+          res.status(404).json({ message: "No budget found!" });
         }
       } catch (err) {
         // Catch any errors in the loop and log them

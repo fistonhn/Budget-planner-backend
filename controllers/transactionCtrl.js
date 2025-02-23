@@ -75,20 +75,20 @@ const transactionController = {
   }),
 
   importTransactions: asyncHandler(async (req, res) => {
-    const categoriesData = req.body;
-    console.log('bbbbbbbbbb ', categoriesData);
-
-    
+    const importedTransactionData = req.body.fileExcelData;
+    const projectName = req.body.projectName;
+    const category = req.body.category
+    console.log('bbbbbbbbbb ', importedTransactionData, projectName);
     try {
       // Loop through each category and create reports and transactions
-      for (let data of categoriesData) {
+      for (let data of importedTransactionData) {
         const reportData = new Report({
           user: req.user,
-          projectName: data.projectName,
+          projectName: projectName,
           description: data.description,
           expenseAmount: data.price * data.quantity,
           amount: data.price * data.quantity,
-          category: data.category,
+          category: category,
         });
         
         const savedReport = await reportData.save();
@@ -103,13 +103,13 @@ const transactionController = {
     
         const transaction = new Transaction({
           user: req.user,
-          projectName: data.projectName,
-          category: data.category,
+          projectName: projectName,
+          category: category,
           description: data.description,
           quantity: data.quantity,
           unit: data.unit,
           price: data.price,
-          amount: data.price * data.quantity,  // Assuming price * quantity to calculate amount
+          amount: data.price * data.quantity,
           paymentMethod: data.paymentMethod,
           recordedBy: userName.username,
           date: data.date,
@@ -119,7 +119,7 @@ const transactionController = {
         const savedTransaction = await transaction.save();
     
         // Optionally, log the saved transaction or handle additional operations
-        console.log('Transaction saved: ', savedTransaction);
+        // console.log('Transaction saved: ', savedTransaction);
       }
     
       res.status(201).json({ message: "Transactions recorded successfully." });
@@ -216,6 +216,7 @@ const transactionController = {
 
   //! delete
   delete: asyncHandler(async (req, res) => {
+  try {
     const transaction = await Transaction.findById(req.params.id);
 
     // verify rights user have for project
@@ -237,6 +238,9 @@ const transactionController = {
 
       res.json({ message: "Transaction Deleted Successfuly" });
 
+    }
+  } catch(error){
+      console.log('error', error)
     }
     
   }),

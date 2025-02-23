@@ -13,6 +13,14 @@ const budgetSchema = new mongoose.Schema(
     progress: { type: Number, required: false },
     currentAmount: { type: Number, required: false },
     category: { type: String, required: false },
+    incomeReportData: {
+      type: {
+        incomeCategory: { type: String, required: false },
+        incomeDescription: { type: String, required: false },
+        reportId: { type: String, required: false },
+      },
+      required: false,
+    }, 
 
   },
   {
