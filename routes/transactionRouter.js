@@ -19,7 +19,7 @@ transactionRouter.post(
 );
 
 //! lists
-transactionRouter.get(
+transactionRouter.post(
   "/api/v1/transactions/lists",
   isAuthenticated,
   transactionController.listsByProject

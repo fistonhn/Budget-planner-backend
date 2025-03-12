@@ -150,7 +150,7 @@ const BudgetController = {
 
   listsByProject: asyncHandler(async (req, res) => {
     try {
-        const budgetDataByProj = await Budget.find({user: req.user, projectName: req.body.projectName});
+        const budgetDataByProj = await Budget.find({projectName: req.body.projectName});
     
         res.status(200).json({ message: "Budgets listed successfully", budgetDataByProj });
       } catch (error) {

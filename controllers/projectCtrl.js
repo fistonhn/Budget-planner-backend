@@ -54,13 +54,9 @@ lists: asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  // Get the user's project rights (projects the user has access to)
   const userProjects = userExisted.projectsRight;
-
-  // Get the project ids from the user's project rights
   const projectIds = userProjects.map((projRight) => projRight.projectId);
 
-  // Find all projects that have a name that exists in the user's project rights
   const myProjects = await Project.find({
     '_id': { $in: projectIds }, // Only projects with ids in the user's projectsRight
   });

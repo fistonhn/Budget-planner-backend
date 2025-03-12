@@ -5,7 +5,7 @@ const reportController = {
 
   //!lists
   listsByProject: asyncHandler(async (req, res) => {
-    const myReports = await Report.find({ user: req.user, projectName: req.body.projectName });
+    const myReports = await Report.find({ projectName: req.body.projectName });
     
     res.status(200).json({ message: "Reports listed successfully", myReports });
 

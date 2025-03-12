@@ -136,13 +136,10 @@ const transactionController = {
       return res.status(404).json({ message: "User not found" });
     }
   
-    const userProjects = userExisted.projectsRight;
-    const projectNames = userProjects.map((projRight) => projRight.projectName);
-    // console.log('projectNames', projectNames)
-
-  
+    // const userProjects = userExisted.projectsRight;
+    // const projectNames = userProjects.map((projRight) => projRight.projectName);
     const myTransactions = await Transaction.find({
-      'projectName': { $in: projectNames },
+      'projectName': { $in: req.body.projectName },
     });
   
     res.status(200).json({
