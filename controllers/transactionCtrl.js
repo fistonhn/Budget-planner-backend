@@ -78,9 +78,7 @@ const transactionController = {
     const importedTransactionData = req.body.fileExcelData;
     const projectName = req.body.projectName;
     const category = req.body.category
-    console.log('bbbbbbbbbb ', importedTransactionData, projectName);
     try {
-      // Loop through each category and create reports and transactions
       for (let data of importedTransactionData) {
         const reportData = new Report({
           user: req.user,
@@ -118,8 +116,6 @@ const transactionController = {
     
         const savedTransaction = await transaction.save();
     
-        // Optionally, log the saved transaction or handle additional operations
-        // console.log('Transaction saved: ', savedTransaction);
       }
     
       res.status(201).json({ message: "Transactions recorded successfully." });
@@ -242,5 +238,59 @@ const transactionController = {
     
   }),
 };
+
+deleteAllTransactions: asyncHandler(async (req, res) => {
+  try {
+    const userExisted = await User.findById(req.user);
+    const userProjects = userExisted.projectsRight;
+
+    const projectName = req.params.projectName;
+    const projectRight = userProjects.find((proj) => proj.projectName === projectName);
+
+    if (!projectRight || projectRight.right === 'ReadOnly') {
+      return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
+    }
+
+    const transactions = await Transaction.find({ projectName: projectName });
+
+    if (!transactions || transactions.length === 0) {
+      return res.status(404).json({ message: "No transactions found for this project!" });
+    }
+
+    const bulkOps = [];
+
+    // Iterate over transactions and prepare bulk delete operations
+    for (let transaction of transactions) {
+      if (transaction.user.toString() === req.user.toString()) {
+        // Prepare delete for transaction
+        bulkOps.push({
+          deleteOne: {
+            filter: { _id: transaction._id }
+          }
+        });
+
+        // Prepare delete for associated report
+        if (transaction.incomeReportData?.reportId) {
+          bulkOps.push({
+            deleteOne: {
+              filter: { _id: transaction.incomeReportData.reportId }
+            }
+          });
+        }
+      }
+    }
+
+    if (bulkOps.length > 0) {
+      await Transaction.bulkWrite(bulkOps);
+    }
+
+    res.json({ message: "All Transactions and associated reports deleted successfully" });
+
+  } catch (error) {
+    console.log('Error deleting transactions:', error);
+    res.status(500).json({ message: "Server Error" });
+  }
+}),
+
 
 module.exports = transactionController;
