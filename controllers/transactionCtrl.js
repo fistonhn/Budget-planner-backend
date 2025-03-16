@@ -6,8 +6,7 @@ const Report = require("../model/Report");
 const transactionController = {
   //!add
   create: asyncHandler(async (req, res) => {
-    const { projectName, category, description, quantity, unit, price, amount, contractAmount, paymentMethod, date, fullSelectedReport } = req.body;
-    // console.log('fullSelectedReport', fullSelectedReport)
+    const { projectName, category, description, quantity, unit, price, amount, paymentMethod, date, fullSelectedReport } = req.body;
 
     const userName = await User.findOne({ _id: req.user });
 
@@ -26,7 +25,7 @@ const transactionController = {
     }
     
     
-    if (!contractAmount, !amount || !category || !date || !projectName || !quantity || !unit || !paymentMethod || !price || !fullSelectedReport) {
+    if (!amount || !category || !date || !projectName || !quantity || !unit || !paymentMethod || !price || !description) {
       return res.status(400).json({ message: "Fill all required fields" });
     }
 
@@ -34,9 +33,9 @@ const transactionController = {
       const reportData = new Report({
         user: req.user,
         projectName: projectName,
-        description: fullSelectedReport.description,
+        description: fullSelectedReport ? fullSelectedReport.description : description,
         expenseAmount: amount,
-        amount: fullSelectedReport.amount,
+        amount: fullSelectedReport ? fullSelectedReport.amount : amount,
         category: category,
       });
       const repot = await reportData.save(); 
@@ -75,6 +74,17 @@ const transactionController = {
   }),
 
   importTransactions: asyncHandler(async (req, res) => {
+  // verify rights user have for the project
+    const userExisted = await User.findById(req.user);
+    const userProjects = userExisted.projectsRight;
+    const projectRight = userProjects.find((proj) => proj.projectName === req.body.projectName);
+
+    // console.log('projectRight', projectRight)
+
+    if (!projectRight || projectRight.right === 'ReadOnly') {
+      return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
+    }
+    
     const importedTransactionData = req.body.fileExcelData;
     const projectName = req.body.projectName;
     const category = req.body.category
@@ -239,58 +249,58 @@ const transactionController = {
   }),
 };
 
-deleteAllTransactions: asyncHandler(async (req, res) => {
-  try {
-    const userExisted = await User.findById(req.user);
-    const userProjects = userExisted.projectsRight;
+// deleteAllTransactions: asyncHandler(async (req, res) => {
+//   try {
+//     const userExisted = await User.findById(req.user);
+//     const userProjects = userExisted.projectsRight;
 
-    const projectName = req.params.projectName;
-    const projectRight = userProjects.find((proj) => proj.projectName === projectName);
+//     const projectName = req.params.projectName;
+//     const projectRight = userProjects.find((proj) => proj.projectName === projectName);
 
-    if (!projectRight || projectRight.right === 'ReadOnly') {
-      return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
-    }
+//     if (!projectRight || projectRight.right === 'ReadOnly') {
+//       return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
+//     }
 
-    const transactions = await Transaction.find({ projectName: projectName });
+//     const transactions = await Transaction.find({ projectName: projectName });
 
-    if (!transactions || transactions.length === 0) {
-      return res.status(404).json({ message: "No transactions found for this project!" });
-    }
+//     if (!transactions || transactions.length === 0) {
+//       return res.status(404).json({ message: "No transactions found for this project!" });
+//     }
 
-    const bulkOps = [];
+//     const bulkOps = [];
 
-    // Iterate over transactions and prepare bulk delete operations
-    for (let transaction of transactions) {
-      if (transaction.user.toString() === req.user.toString()) {
-        // Prepare delete for transaction
-        bulkOps.push({
-          deleteOne: {
-            filter: { _id: transaction._id }
-          }
-        });
+//     // Iterate over transactions and prepare bulk delete operations
+//     for (let transaction of transactions) {
+//       if (transaction.user.toString() === req.user.toString()) {
+//         // Prepare delete for transaction
+//         bulkOps.push({
+//           deleteOne: {
+//             filter: { _id: transaction._id }
+//           }
+//         });
 
-        // Prepare delete for associated report
-        if (transaction.incomeReportData?.reportId) {
-          bulkOps.push({
-            deleteOne: {
-              filter: { _id: transaction.incomeReportData.reportId }
-            }
-          });
-        }
-      }
-    }
+//         // Prepare delete for associated report
+//         if (transaction.incomeReportData?.reportId) {
+//           bulkOps.push({
+//             deleteOne: {
+//               filter: { _id: transaction.incomeReportData.reportId }
+//             }
+//           });
+//         }
+//       }
+//     }
 
-    if (bulkOps.length > 0) {
-      await Transaction.bulkWrite(bulkOps);
-    }
+//     if (bulkOps.length > 0) {
+//       await Transaction.bulkWrite(bulkOps);
+//     }
 
-    res.json({ message: "All Transactions and associated reports deleted successfully" });
+//     res.json({ message: "All Transactions and associated reports deleted successfully" });
 
-  } catch (error) {
-    console.log('Error deleting transactions:', error);
-    res.status(500).json({ message: "Server Error" });
-  }
-}),
+//   } catch (error) {
+//     console.log('Error deleting transactions:', error);
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// }),
 
 
 module.exports = transactionController;

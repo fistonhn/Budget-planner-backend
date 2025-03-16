@@ -1,12 +1,12 @@
 const express = require("express");
 const projectController = require("../controllers/projectCtrl");
 const isAuthenticated = require("../middlewares/isAuth");
-const userRouter = express.Router();
+const projectRouter = express.Router();
 
-userRouter.post("/api/v1/projects/create", isAuthenticated, projectController.create);
+projectRouter.post("/api/v1/projects/create", isAuthenticated, projectController.create);
 
-userRouter.get("/api/v1/projects/lists", isAuthenticated, projectController.lists);
+projectRouter.get("/api/v1/projects/lists", isAuthenticated, projectController.lists);
 
-// userRouter.put("/api/v1/users/update-project", isAuthenticated, projectController.updateProject);
+projectRouter.delete("/api/v1/projects/delete/:id", isAuthenticated, projectController.deleteProject);
 
-module.exports = userRouter;
+module.exports = projectRouter;

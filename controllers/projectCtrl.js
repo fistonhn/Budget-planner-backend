@@ -69,6 +69,27 @@ lists: asyncHandler(async (req, res) => {
 
   }),
 
+deleteProject: asyncHandler(async (req, res) => {
+  const projectExisist = await Project.findById(req.params.id);
+  if (!projectExisist) {
+      res.status(404).json({ message: "Project not found" });
+      return;
+  }
+   // verify rights user have for project
+  const userExisted = await User.findById(req.user);
+  const userProjects = userExisted.projectsRight;
+  const projectRight = userProjects.find((proj) => proj.projectName === projectExisist.name);
+
+  if (!projectRight || projectRight.right !== 'owner') {
+    return res.status(401).json({ message: "you don't have Ownership of this Project!" });
+  }
+  
+ 
+
+  const deletedProject = await Project.findByIdAndDelete(req.params.id);
+  res.status(200).json({ message: "Project deleted successfully", deletedProject });
+}),
+
 };
 
 module.exports = projectController;

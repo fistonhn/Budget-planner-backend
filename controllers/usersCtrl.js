@@ -77,10 +77,19 @@ const usersController = {
         return res.status(400).json({ message: "All fields (accessRight, and userEmail) are required." });
       }
 
-      const userExisted = await User.findOne({ email: userEmail });
+      let userExisted 
+      const userFound = await User.findOne({ email: userEmail });
 
-      if (!userExisted) {
-        return res.status(404).json({ message: `User must have registed acount, ${userEmail} is Not registered!` });
+
+      if (!userFound) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(userEmail, salt);
+        const userCreated = await User.create({
+          email: userEmail,
+          username: userEmail,
+          password: hashedPassword,
+        });
+        userExisted = userCreated
       }
 
       // verify rights user have for project
