@@ -79,7 +79,6 @@ const BudgetController = {
   updateIncomes: asyncHandler(async (req, res) => {
     let { currentAmount, amount, category, id, progress, projectName, description } = req.body;
       try {
-        // Find the existing budget record using the unique code and project name
         const existingBudget = await Budget.findById(id);
 
         // verify rights user have for project
@@ -98,9 +97,7 @@ const BudgetController = {
           let savedReport
 
           if(existingReport){
-            // console.log('existingReport', existingReport)
-
-            existingReport.incomeAmount = currentAmount || existingReport.incomeAmount;  
+            existingReport.incomeAmount = currentAmount;
             existingReport.category = category || existingReport.category;
             const updateThisReport = await existingReport.save();
             savedReport = updateThisReport

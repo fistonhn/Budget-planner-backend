@@ -1,6 +1,9 @@
 const asyncHandler = require("express-async-handler");
 const Project = require("../model/Project");
 const User = require("../model/User");
+const Budget = require("../model/Budget");
+const Report = require("../model/Report");
+const Transaction = require("../model/Transaction");
 
 const projectController = {
   create: asyncHandler(async (req, res) => {
@@ -85,7 +88,21 @@ deleteProject: asyncHandler(async (req, res) => {
   }
   
  
+  const projectBudgets = await Budget.find({ projectName: projectExisist.name });
+  if (projectBudgets) {
+    await Budget.deleteMany({ projectName: projectExisist.name });
+  }
 
+  const projectTransactions = await Transaction.find({ projectName: projectExisist.name });
+  if (projectTransactions) {
+    await Transaction.deleteMany({ projectName: projectExisist.name });
+  }
+
+  const projectReports = await Report.find({ projectName: projectExisist.name });
+  if (projectReports) {
+    await Report.deleteMany({ projectName: projectExisist.name });
+  }
+  
   const deletedProject = await Project.findByIdAndDelete(req.params.id);
   res.status(200).json({ message: "Project deleted successfully", deletedProject });
 }),
