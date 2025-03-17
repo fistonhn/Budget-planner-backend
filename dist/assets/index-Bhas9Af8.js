@@ -660,6 +660,13 @@ const Z7=async()=>(await Fe.get(`${Ge}/categories/lists`,{headers:{Authorization
           margin-left: 9%;
           margin-top: 200px;
         }
+          
+        @media (max-width: 1400px) {
+          .projectName {
+            margin-top: 500px;
+          }
+        }
+
         @media (max-width: 768px) {
           .projectName {
             margin-top: 500px;
