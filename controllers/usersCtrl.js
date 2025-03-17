@@ -14,7 +14,7 @@ const sendProjectAssignmentEmail = async (userEmail, password, projectName, acce
   console.log('sendProjectAssignmentEmail', userEmail, password, projectName, accessRight, isNewUser)
   const msg = {
     to: userEmail,
-    from: 'hnfiston6@gmail.com',
+    from: process.env.SENDGRID_EMAIL_FROM,
     subject: `Welcome! Your Account and Project Access`,
     text: `Hello,
 
