@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require('dotenv').config();
 const userRouter = require("./routes/userRouter");
 const errorHandler = require("./middlewares/errorHandlerMiddleware");
 const categoryRouter = require("./routes/categoryRouter");
@@ -11,10 +12,11 @@ const projectRouter = require("./routes/projectRouter");
 const reportRouter = require("./routes/reportRouter");
 
 const app = express();
+console.log(process.env.DATABASE_URL);
 
 //!Connect to mongodb
 mongoose
-  .connect("mongodb+srv://fistonkerapay:fistonkerapay@cluster0.amcgs.mongodb.net/AviatorPredictorPro?retryWrites=true&w=majority")
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("DB Connected"))
   .catch((e) => console.log(e));
 
