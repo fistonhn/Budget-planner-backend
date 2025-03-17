@@ -1,8 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require('path');
-
 const userRouter = require("./routes/userRouter");
 const errorHandler = require("./middlewares/errorHandlerMiddleware");
 const categoryRouter = require("./routes/categoryRouter");
@@ -31,14 +29,6 @@ app.use("/", budgetRouter);
 app.use("/", projectRouter);
 app.use("/", transactionRouter);
 app.use("/", reportRouter);
-
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// Add routes for your API here (e.g. /api)
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
 
 //! Error
 app.use(errorHandler);

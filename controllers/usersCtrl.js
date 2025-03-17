@@ -4,8 +4,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../model/User");
 const Project = require("../model/Project");
 const sendgrid = require('@sendgrid/mail');
+require('dotenv').config();
 
-sendgrid.setApiKey("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");
+
+sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendProjectAssignmentEmail = async (userEmail, password, projectName, accessRight, isNewUser) => {
   console.log('sendProjectAssignmentEmail', userEmail, password, projectName, accessRight, isNewUser)
