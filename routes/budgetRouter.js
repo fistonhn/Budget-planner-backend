@@ -55,7 +55,7 @@ budgetRouter.delete(
 );
 //! delete all
 budgetRouter.delete(
-  "/api/v1/budget/deleteAll",
+  "/api/v1/budget/deleteIncomeBudgets/:projectName",
   isAuthenticated,
   budgetController.deleteAll
 );

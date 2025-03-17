@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const Budget = require("../model/Budget");
 const Report = require("../model/Report");
 const User = require("../model/User");
+const Project = require("../model/Project");
 
 const BudgetController = {
   //!add
@@ -232,24 +233,35 @@ const BudgetController = {
       }
     
   }),
-  //! delete all
 
   deleteAll: asyncHandler(async (req, res) => {
     try {
-        // Delete all budgets from the database
-        const result = await Budget.deleteMany({});
-        
-        // Check if any documents were deleted
-        if (result.deletedCount === 0) {
-          return res.status(404).json({ message: "No budgets found to delete" });
+      // verify rights user have for project
+      const userExisted = await User.findById(req.user);
+      const userProjects = userExisted.projectsRight;
+      const projectRight = userProjects.find((proj) => proj.projectName === req.params.projectName);
+
+      if (!projectRight || projectRight.right === 'ReadOnly') {
+        return res.status(401).json({ message: "Project access limited to ReadOnly Project!" });
+      }
+
+      const projectBudgets = await Budget.find({ projectName: req.params.projectName });
+      if (projectBudgets.length > 0) {
+        await Budget.deleteMany({ projectName: req.params.projectName });
+
+        const projectReports = await Report.find({ projectName: req.params.projectName, incomeAmount: { $gt: 0 }, expenseAmount: { $exists: false } });
+        if (projectReports.length > 0) {
+          const cc = await Report.deleteMany({ projectName: req.params.projectName, incomeAmount: { $gt: 0 }, expenseAmount: { $exists: false } });
         }
-        
-        // Send a success response
-        res.status(200).json({ message: "All budgets deleted successfully" });
-      } catch (error) {
-        console.error("Error deleting all budgets:", error);
-        res.status(500).json({ message: "Error deleting all budgets", error });
-      }    
+
+        res.status(200).json({ message: "Income budget deleted successfully" });
+      } else {
+        res.status(404).json({ message: "No budget found!"})
+      }      
+    } catch (error) {
+      console.error("Error deleting all budgets:", error);
+      res.status(500).json({ message: "Error deleting all budgets", error });
+    }    
     
   }),
 };

@@ -130,7 +130,8 @@ const transactionController = {
     
       res.status(201).json({ message: "Transactions recorded successfully." });
     } catch (err) {
-      res.status(500).json({ message: "Error saving data", err });
+      // console.log('err', err)
+      res.status(500).json({ message: "Internal Server Error! Contact admin.", err });
     }    
 
   }),
