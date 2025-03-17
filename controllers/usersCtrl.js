@@ -1,10 +1,11 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+require('dotenv').config();
+
 const User = require("../model/User");
 const Project = require("../model/Project");
 const sendgrid = require('@sendgrid/mail');
-require('dotenv').config();
 
 
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
