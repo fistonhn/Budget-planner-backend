@@ -17,7 +17,7 @@ const app = express();
 
 //!Connect to mongodb
 mongoose
-  .connect('process.env.MONGODB_URI')
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("DB Connected"))
   .catch((e) => console.log(e));
 
